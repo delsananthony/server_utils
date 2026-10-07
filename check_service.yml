@@ -1,0 +1,15 @@
+- name: Check if a service is running
+  hosts: replica
+  remote_user: odoo
+  gather_facts: false
+  vars:
+    service_name: odoo14-replica
+  tasks:
+    - name: Collect service states
+      ansible.builtin.service_facts:
+
+    - name: Report status
+      ansible.builtin.assert:
+        that: ansible_facts.services.get(service_name + '.service', {}).get('state') == 'running'
+        success_msg: "{{ service_name }} is running"
+        fail_msg: "{{ service_name }} is NOT running on {{ inventory_hostname }}"

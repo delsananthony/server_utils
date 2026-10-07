@@ -1,0 +1,54 @@
+- name: Pull code and install or upgrade an Odoo module
+  hosts: replica
+  remote_user: odoo
+  vars:
+    repo_url: git@github.com:RonBe/odoo14_dev.git
+    repo_dest: /home/odoo/Odoo14/test
+    repo_branch: staging
+    odoo_python: /home/odoo/Odoo14.0/.venv/bin/python
+    odoo_bin: /home/odoo/Odoo14.0/odoo-bin
+    odoo_conf: /etc/odoo/replica.conf
+    odoo_db: muti_live_replica
+    odoo_service: odoo14-replica
+    module_name: muti_dev_product_search      # module nameL e.g. point_of_sale, sale_management, etc.
+    module_action: upgrade        # install | upgrade
+
+  tasks:
+    - name: Validate module_action
+      ansible.builtin.assert:
+        that: module_action in ['install', 'upgrade']
+
+    - name: Pull latest code
+      ansible.builtin.git:
+        repo: "{{ repo_url }}"
+        dest: "{{ repo_dest }}"
+        version: "{{ repo_branch }}"
+
+    - name: Install or upgrade with the service stopped
+      block:
+        - name: Stop Odoo
+          become: true
+          ansible.builtin.service:
+            name: "{{ odoo_service }}"
+            state: stopped
+
+        - name: Run odoo-bin
+          ansible.builtin.command:
+            argv:
+              - "{{ odoo_python }}"
+              - "{{ odoo_bin }}"
+              - -c
+              - "{{ odoo_conf }}"
+              - -d
+              - "{{ odoo_db }}"
+              - "{{ '-i' if module_action == 'install' else '-u' }}"
+              - "{{ module_name }}"
+              - --stop-after-init
+              - --no-http
+
+      always:
+        - name: Start Odoo
+          become: true
+          ansible.builtin.service:
+            name: "{{ odoo_service }}"
+            state: started
