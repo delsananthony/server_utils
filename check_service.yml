@@ -1,5 +1,5 @@
 - name: Check if a service is running
-  hosts: replica
+  hosts: webservers
   remote_user: odoo
   gather_facts: false
   vars:

@@ -1,16 +1,17 @@
 - name: Pull code and install or upgrade an Odoo module
-  hosts: replica
+  hosts: webservers
   remote_user: odoo
   vars:
     repo_url: git@github.com:RonBe/odoo14_dev.git
     repo_dest: /home/odoo/Odoo14/test
+    repo_dest_main: /home/odoo/Odoo14/muti_accounting
     repo_branch: staging
     odoo_python: /home/odoo/Odoo14.0/.venv/bin/python
     odoo_bin: /home/odoo/Odoo14.0/odoo-bin
     odoo_conf: /etc/odoo/replica.conf
     odoo_db: muti_live_replica
     odoo_service: odoo14-replica
-    module_name: muti_dev_product_search      # module nameL e.g. point_of_sale, sale_management, etc.
+    module_name: muti_dev_agent_enhancement      # module nameL e.g. point_of_sale, sale_management, etc.
     module_action: upgrade        # install | upgrade
 
   tasks:
@@ -23,6 +24,12 @@
         repo: "{{ repo_url }}"
         dest: "{{ repo_dest }}"
         version: "{{ repo_branch }}"
+
+    - name: Copy file between folders on the remote server
+      ansible.builtin.copy:
+        src: "{{ repo_dest }}/{{ module_name }}"
+        dest: "{{ repo_dest_main }}/{{ module_name }}"
+        remote_src: yes
 
     - name: Install or upgrade with the service stopped
       block:
