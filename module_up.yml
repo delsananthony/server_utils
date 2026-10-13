@@ -11,7 +11,7 @@
     odoo_conf: /etc/odoo/replica.conf
     odoo_db: muti_live_replica
     odoo_service: odoo14-replica
-    module_name: muti_dev_agent_enhancement      # module nameL e.g. point_of_sale, sale_management, etc.
+    module_name: muti_dev_transfer_lot_serial_number_existing      # module nameL e.g. point_of_sale, sale_management, etc.
     module_action: upgrade        # install | upgrade
 
   tasks:
@@ -27,7 +27,7 @@
 
     - name: Copy file between folders on the remote server
       ansible.builtin.copy:
-        src: "{{ repo_dest }}/{{ module_name }}"
+        src: "{{ repo_dest }}/{{ module_name }}/"
         dest: "{{ repo_dest_main }}/{{ module_name }}"
         remote_src: yes
 
